@@ -263,7 +263,7 @@ export default function CGPACalculator() {
                         value={c.credits}
                         onChange={e => updateCourse(c.id, 'credits', e.target.value)}
                       >
-                        {['1.0', '1.5', '2.0', '3.0', '4.0'].map(cr => (
+                        {['1.0', '1.5', '2.0', '3.0', '4.0', '4.5'].map(cr => (
                           <option key={cr} value={cr}>{cr} Credits</option>
                         ))}
                       </select>
