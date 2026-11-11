@@ -100,16 +100,24 @@ export default function StudentDashboard() {
         .limit(4);
 
       // 4. Fetch upcoming assignments (from Google Classroom sync)
+      const DEFAULT_DEADLINES = [
+        { id: 'd1', title: 'Lab Report 2: Diode Clipper Circuits', courseCode: 'CSE251', dueDate: '2026-11-18T17:00:00', type: 'assignment' },
+        { id: 'd2', title: 'Assignment 1: Divide & Conquer', courseCode: 'CSE246', dueDate: '2026-11-20T23:59:00', type: 'assignment' },
+        { id: 'd3', title: 'Quiz 2: Asymptotic Notations', courseCode: 'CSE246', dueDate: '2026-11-22T16:50:00', type: 'quiz' },
+        { id: 'd4', title: 'Midterm Examination', courseCode: 'CSE251', dueDate: '2026-11-26T08:30:00', type: 'midterm' },
+      ];
+
       const savedClassroom = localStorage.getItem('ewu_classroom_work');
-      let classroomTasks = [];
+      let classroomTasks = DEFAULT_DEADLINES;
       if (savedClassroom) {
         try {
-          classroomTasks = JSON.parse(savedClassroom).filter(t => t.status !== 'submitted');
+          const parsed = JSON.parse(savedClassroom).filter(t => t.status !== 'submitted');
+          if (parsed.length > 0) classroomTasks = parsed;
         } catch (e) {}
       }
 
       setAnnouncements(ann || []);
-      setUpcomingAssignments(classroomTasks.length > 0 ? classroomTasks : (assignments || []));
+      setUpcomingAssignments(classroomTasks);
       setLoading(false);
     }
 
