@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Calendar, Bell, BookOpen, TrendingUp, Clock, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
+import { Calendar, Bell, BookOpen, TrendingUp, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 
@@ -124,7 +124,7 @@ export default function StudentDashboard() {
     }
 
     fetchData();
-  }, [today]);
+  }, [today, profile?.id]);
 
   const totalCredits = enrolledCourses.reduce((sum, c) => sum + (parseFloat(c.credits) || 0), 0);
 

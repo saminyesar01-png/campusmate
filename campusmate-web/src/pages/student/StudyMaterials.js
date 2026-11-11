@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { BookOpen, Download, Search, FileText, ExternalLink } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function StudyMaterials() {

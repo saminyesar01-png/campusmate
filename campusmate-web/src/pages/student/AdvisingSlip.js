@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase';
-import { Upload, Plus, Trash2, Save, FileImage, CheckCircle, Clock, MapPin, BookOpen, Wand2, Calendar } from 'lucide-react';
+import { Upload, Plus, Trash2, FileImage, CheckCircle, Clock, MapPin, BookOpen, Wand2 } from 'lucide-react';
 
 // Official East West University Day Mappings
 // S = Sunday, M = Monday, T = Tuesday, W = Wednesday, R = Thursday

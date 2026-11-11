@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import { 
-  FileText, FlaskConical, CheckCircle2, Clock, AlertCircle, ExternalLink, 
-  RefreshCw, BookOpen, GraduationCap, Sparkles, Filter, Download, MessageSquare
+  CheckCircle2, Clock, ExternalLink, RefreshCw, Download
 } from 'lucide-react';
-import { format, differenceInDays } from 'date-fns';
+import { format } from 'date-fns';
 
 // Categorized Google Classroom Stream (Post-Midterm cycle for Fall-2026)
 const EWU_CLASSROOM_STREAM = [
@@ -146,7 +144,6 @@ const EWU_CLASSROOM_STREAM = [
 ];
 
 export default function GoogleClassroom() {
-  const { profile } = useAuth();
   const [stream, setStream] = useState(() => {
     const saved = localStorage.getItem('ewu_classroom_stream_v3');
     return saved ? JSON.parse(saved) : EWU_CLASSROOM_STREAM;
