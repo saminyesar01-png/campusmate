@@ -1,0 +1,10 @@
+# Supabase
+.supabase/
+
+# Environment
+.env
+*.local
+
+# OS
+.DS_Store
+Thumbs.db
