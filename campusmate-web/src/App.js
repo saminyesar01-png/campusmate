@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -27,28 +27,14 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import './styles/global.css';
 
 function AppLayout({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   return (
     <div className="app-layout">
-      <Navbar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Navbar />
       <div className="app-main">
-        <div className="navbar-topbar" style={{ display: 'none' }} /> {/* spacer handled by CSS */}
         <main className="app-content">
           {children}
         </main>
       </div>
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)',
-            zIndex: 99, display: 'none'
-          }}
-          className="sidebar-overlay"
-        />
-      )}
     </div>
   );
 }

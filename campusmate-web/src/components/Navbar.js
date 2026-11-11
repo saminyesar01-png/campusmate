@@ -3,10 +3,10 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, Calendar, Bell, BookOpen,
-  Calculator, Search, LogOut, Menu, X, GraduationCap, Sparkles, FileText
+  Calculator, Search, LogOut, GraduationCap, Sparkles, FileText
 } from 'lucide-react';
 
-export default function Navbar({ sidebarOpen, setSidebarOpen }) {
+export default function Navbar() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,29 +17,31 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
   }
 
   const studentLinks = [
-    { to: '/student', icon: <LayoutDashboard size={18} />, label: 'Overview' },
-    { to: '/student/classroom', icon: <Sparkles size={18} />, label: 'Google Classroom' },
-    { to: '/student/advising', icon: <FileText size={18} />, label: 'Advising & Routine' },
-    { to: '/student/routine', icon: <Calendar size={18} />, label: 'Class Routine' },
-    { to: '/student/materials', icon: <BookOpen size={18} />, label: 'Study Materials' },
-    { to: '/student/cgpa', icon: <Calculator size={18} />, label: 'EWU CGPA' },
-    { to: '/student/announcements', icon: <Bell size={18} />, label: 'Announcements' },
-    { to: '/student/lost-found', icon: <Search size={18} />, label: 'Lost & Found' },
+    { to: '/student', icon: <LayoutDashboard size={16} />, label: 'Overview' },
+    { to: '/student/classroom', icon: <Sparkles size={16} />, label: 'Google Classroom' },
+    { to: '/student/advising', icon: <FileText size={16} />, label: 'Advising & Routine' },
+    { to: '/student/routine', icon: <Calendar size={16} />, label: 'Class Routine' },
+    { to: '/student/materials', icon: <BookOpen size={16} />, label: 'Study Materials' },
+    { to: '/student/cgpa', icon: <Calculator size={16} />, label: 'EWU CGPA' },
+    { to: '/student/announcements', icon: <Bell size={16} />, label: 'Announcements' },
+    { to: '/student/lost-found', icon: <Search size={16} />, label: 'Lost & Found' },
   ];
 
   const teacherLinks = [
-    { to: '/teacher', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-    { to: '/teacher/announcements', icon: <Bell size={18} />, label: 'Announcements' },
-    { to: '/teacher/materials', icon: <BookOpen size={18} />, label: 'Materials' },
-    { to: '/teacher/assignments', icon: <Calendar size={18} />, label: 'Assignments' },
+    { to: '/teacher', icon: <LayoutDashboard size={16} />, label: 'Dashboard' },
+    { to: '/teacher/announcements', icon: <Bell size={16} />, label: 'Announcements' },
+    { to: '/teacher/materials', icon: <BookOpen size={16} />, label: 'Materials' },
+    { to: '/teacher/assignments', icon: <Calendar size={16} />, label: 'Assignments' },
+    { to: '/student/lost-found', icon: <Search size={16} />, label: 'Lost & Found' },
   ];
 
   const adminLinks = [
-    { to: '/admin', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-    { to: '/admin/users', icon: <GraduationCap size={18} />, label: 'Users' },
-    { to: '/admin/courses', icon: <BookOpen size={18} />, label: 'Courses' },
-    { to: '/admin/events', icon: <Calendar size={18} />, label: 'Events' },
-    { to: '/admin/announcements', icon: <Bell size={18} />, label: 'Announcements' },
+    { to: '/admin', icon: <LayoutDashboard size={16} />, label: 'Dashboard' },
+    { to: '/admin/users', icon: <GraduationCap size={16} />, label: 'Users' },
+    { to: '/admin/courses', icon: <BookOpen size={16} />, label: 'Courses' },
+    { to: '/admin/events', icon: <Calendar size={16} />, label: 'Events' },
+    { to: '/admin/announcements', icon: <Bell size={16} />, label: 'Announcements' },
+    { to: '/student/lost-found', icon: <Search size={16} />, label: 'Lost & Found' },
   ];
 
   const links =
@@ -48,68 +50,58 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
     studentLinks;
 
   return (
-    <>
-      {/* Mobile top bar */}
-      <div className="navbar-topbar">
-        <button
-          className="sidebar-toggle"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          aria-label="Toggle sidebar"
-        >
-          {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
-        <span className="navbar-brand">🎓 CampusMate</span>
-        <span className="navbar-role-badge">{profile?.role || 'User'}</span>
+    <header className="top-navbar">
+      {/* Brand & User Row */}
+      <div className="top-navbar-main">
+        <Link to="/" className="top-navbar-logo">
+          <span className="logo-icon">🎓</span>
+          <div className="logo-text-col">
+            <span className="logo-title">CampusMate</span>
+            <span className="logo-subtitle">EWU Academic Hub</span>
+          </div>
+        </Link>
+
+        {/* User Profile & Sign Out */}
+        <div className="top-navbar-actions">
+          <div className="user-capsule">
+            <div className="user-capsule-avatar">
+              {profile?.full_name?.[0]?.toUpperCase() || 'U'}
+            </div>
+            <div className="user-capsule-details">
+              <span className="user-capsule-name">
+                {profile?.full_name || 'Student'}
+              </span>
+              <span className="user-capsule-id">
+                {profile?.student_id ? `ID: ${profile.student_id}` : (profile?.role || 'Student')}
+              </span>
+            </div>
+          </div>
+
+          <button onClick={handleSignOut} className="btn-capsule-signout" title="Sign Out">
+            <LogOut size={14} />
+            <span className="signout-text">Sign Out</span>
+          </button>
+        </div>
       </div>
 
-      {/* Sleek Obsidian Sidebar */}
-      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-header">
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span className="sidebar-logo">🎓 CampusMate</span>
-            <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '2px' }}>
-              EWU Academic Hub
-            </span>
-          </div>
+      {/* Oval / Capsule Shape Navigation Bar */}
+      <nav className="top-navbar-nav">
+        <div className="nav-capsule-scroller">
+          {links.map(({ to, icon, label }) => {
+            const isActive = location.pathname === to;
+            return (
+              <Link
+                key={to}
+                to={to}
+                className={`nav-capsule-pill ${isActive ? 'active' : ''}`}
+              >
+                <span className="nav-pill-icon">{icon}</span>
+                <span className="nav-pill-label">{label}</span>
+              </Link>
+            );
+          })}
         </div>
-
-        <div className="sidebar-user">
-          <div className="user-avatar">
-            {profile?.full_name?.[0]?.toUpperCase() || 'S'}
-          </div>
-          <div className="user-info" style={{ minWidth: 0, flex: 1 }}>
-            <p className="user-name" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {profile?.full_name || 'Student'}
-            </p>
-            <p className="user-role">
-              {profile?.student_id ? `${profile.student_id}` : profile?.role || 'student'}
-            </p>
-          </div>
-        </div>
-
-        <nav className="sidebar-nav">
-          <p style={{ padding: '0 10px', margin: '0 0 8px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
-            Academic Space
-          </p>
-
-          {links.map(({ to, icon, label }) => (
-            <Link
-              key={to}
-              to={to}
-              className={`nav-link ${location.pathname === to ? 'active' : ''}`}
-              onClick={() => setSidebarOpen(false)}
-            >
-              {icon}
-              <span>{label}</span>
-            </Link>
-          ))}
-        </nav>
-
-        <button className="sidebar-signout" onClick={handleSignOut}>
-          <LogOut size={18} />
-          <span>Sign Out</span>
-        </button>
-      </aside>
-    </>
+      </nav>
+    </header>
   );
 }
