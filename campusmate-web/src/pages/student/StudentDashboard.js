@@ -99,19 +99,20 @@ export default function StudentDashboard() {
         .order('created_at', { ascending: false })
         .limit(4);
 
-      // 4. Fetch upcoming assignments (from Google Classroom sync)
-      const DEFAULT_DEADLINES = [
-        { id: 'd1', title: 'Lab Report 2: Diode Clipper Circuits', courseCode: 'CSE251', dueDate: '2026-11-18T17:00:00', type: 'assignment' },
-        { id: 'd2', title: 'Assignment 1: Divide & Conquer', courseCode: 'CSE246', dueDate: '2026-11-20T23:59:00', type: 'assignment' },
-        { id: 'd3', title: 'Quiz 2: Asymptotic Notations', courseCode: 'CSE246', dueDate: '2026-11-22T16:50:00', type: 'quiz' },
-        { id: 'd4', title: 'Midterm Examination', courseCode: 'CSE251', dueDate: '2026-11-26T08:30:00', type: 'midterm' },
+      // 4. Fetch upcoming post-mid assignments & lab reports (from Classroom sync)
+      const DEFAULT_POST_MID_TASKS = [
+        { id: 't1', title: 'Lab Report 4: CE Amplifier Frequency Response', courseCode: 'CSE251', dueDate: '2026-11-17T17:00:00', type: 'Lab Report' },
+        { id: 't2', title: 'Lab Task 5: Dijkstra & Bellman-Ford', courseCode: 'CSE246', dueDate: '2026-11-16T23:59:00', type: 'Lab Task' },
+        { id: 't3', title: 'Quiz 3: Greedy Methods & Huffman Coding', courseCode: 'CSE246', dueDate: '2026-11-19T16:50:00', type: 'Quiz' },
+        { id: 't4', title: 'Term Paper Proposal: Urbanization Trends', courseCode: 'POP7203', dueDate: '2026-11-24T23:59:00', type: 'Term Paper' },
       ];
 
-      const savedClassroom = localStorage.getItem('ewu_classroom_work');
-      let classroomTasks = DEFAULT_DEADLINES;
+      const savedClassroom = localStorage.getItem('ewu_classroom_stream_v3');
+      let classroomTasks = DEFAULT_POST_MID_TASKS;
       if (savedClassroom) {
         try {
-          const parsed = JSON.parse(savedClassroom).filter(t => t.status !== 'submitted');
+          const parsed = JSON.parse(savedClassroom)
+            .filter(t => t.category !== 'lecture' && (t.status !== 'completed' && t.status !== 'submitted') && t.dueDate);
           if (parsed.length > 0) classroomTasks = parsed;
         } catch (e) {}
       }
