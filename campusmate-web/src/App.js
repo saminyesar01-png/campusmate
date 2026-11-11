@@ -14,6 +14,7 @@ import ClassRoutine from './pages/student/ClassRoutine';
 import Announcements from './pages/student/Announcements';
 import CGPACalculator from './pages/student/CGPACalculator';
 import LostFound from './pages/student/LostFound';
+import StudyMaterials from './pages/student/StudyMaterials';
 
 // Teacher pages
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
@@ -73,6 +74,11 @@ export default function App() {
           <Route path="/student/announcements" element={
             <ProtectedRoute allowedRoles={['student']}>
               <AppLayout><Announcements /></AppLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/student/materials" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <AppLayout><StudyMaterials /></AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/student/cgpa" element={
