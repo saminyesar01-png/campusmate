@@ -52,9 +52,10 @@ export default function StudentDashboard() {
   useEffect(() => {
     async function fetchData() {
       // 1. Read Advising Slip Courses (User-specific or fallback)
+      const isSamin = !profile?.id || profile?.email?.includes('samin') || profile?.full_name?.toLowerCase().includes('samin');
       const userKey = profile?.id ? `ewu_advising_courses_${profile.id}` : null;
-      const saved = (userKey && localStorage.getItem(userKey)) || localStorage.getItem('ewu_advising_courses_v2');
-      const courses = saved ? JSON.parse(saved) : DEFAULT_SLIP_COURSES;
+      const saved = userKey ? localStorage.getItem(userKey) : localStorage.getItem('ewu_advising_courses_v2');
+      const courses = saved ? JSON.parse(saved) : (isSamin ? DEFAULT_SLIP_COURSES : []);
       setEnrolledCourses(courses);
 
       // 2. Extract classes scheduled for TODAY (e.g. Thursday has 3 classes!)
@@ -108,14 +109,17 @@ export default function StudentDashboard() {
         { id: 't4', title: 'Term Paper Proposal: Urbanization Trends', courseCode: 'POP7203', dueDate: '2026-11-24T23:59:00', type: 'Term Paper' },
       ];
 
-      const savedClassroom = localStorage.getItem('ewu_classroom_stream_v3');
-      let classroomTasks = DEFAULT_POST_MID_TASKS;
+      const classroomKey = profile?.id ? `ewu_classroom_stream_${profile.id}` : 'ewu_classroom_stream_v3';
+      const savedClassroom = localStorage.getItem(classroomKey);
+      let classroomTasks = [];
       if (savedClassroom) {
         try {
           const parsed = JSON.parse(savedClassroom)
             .filter(t => t.category !== 'lecture' && (t.status !== 'completed' && t.status !== 'submitted') && t.dueDate);
           if (parsed.length > 0) classroomTasks = parsed;
         } catch (e) {}
+      } else if (isSamin) {
+        classroomTasks = DEFAULT_POST_MID_TASKS;
       }
 
       setAnnouncements(ann || []);

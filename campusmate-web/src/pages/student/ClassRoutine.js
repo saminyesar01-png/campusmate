@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -39,13 +40,16 @@ const DEFAULT_SLIP_COURSES = [
 ];
 
 export default function ClassRoutine() {
+  const { profile } = useAuth();
   const [schedule, setSchedule] = useState({});
   const [activeDay, setActiveDay] = useState(DAYS.includes(today) ? today : 'Sunday');
 
   useEffect(() => {
-    // Read from advising slip storage or fallback to default
-    const saved = localStorage.getItem('ewu_advising_courses_v2');
-    const courses = saved ? JSON.parse(saved) : DEFAULT_SLIP_COURSES;
+    // Read from user-isolated advising slip storage
+    const storageKey = profile?.id ? `ewu_advising_courses_${profile.id}` : 'ewu_advising_courses_v2';
+    const isSamin = !profile?.id || profile?.email?.includes('samin') || profile?.full_name?.toLowerCase().includes('samin');
+    const saved = localStorage.getItem(storageKey);
+    const courses = saved ? JSON.parse(saved) : (isSamin ? DEFAULT_SLIP_COURSES : []);
 
     const grouped = {};
     DAYS.forEach(d => { grouped[d] = []; });
@@ -86,7 +90,7 @@ export default function ClassRoutine() {
     });
 
     setSchedule(grouped);
-  }, []);
+  }, [profile?.id]);
 
   return (
     <div className="page">

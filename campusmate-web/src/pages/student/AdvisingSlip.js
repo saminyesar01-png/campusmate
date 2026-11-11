@@ -58,10 +58,14 @@ export default function AdvisingSlip() {
   const [activeTab, setActiveTab] = useState('routine'); // default to routine view so they see it right away!
   const [slipImage, setSlipImage] = useState(null);
   const [slipPreview, setSlipPreview] = useState(null);
+  const isSamin = !profile?.id || profile?.email?.includes('samin') || profile?.full_name?.toLowerCase().includes('samin');
   const storageKey = profile?.id ? `ewu_advising_courses_${profile.id}` : 'ewu_advising_courses_v2';
   const [courses, setCourses] = useState(() => {
-    const saved = localStorage.getItem(storageKey) || localStorage.getItem('ewu_advising_courses_v2');
-    return saved ? JSON.parse(saved) : SAMIN_SLIP_COURSES;
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return isSamin ? SAMIN_SLIP_COURSES : [];
   });
 
   useEffect(() => {
