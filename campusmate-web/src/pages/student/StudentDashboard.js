@@ -51,8 +51,9 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     async function fetchData() {
-      // 1. Read Advising Slip Courses
-      const saved = localStorage.getItem('ewu_advising_courses_v2');
+      // 1. Read Advising Slip Courses (User-specific or fallback)
+      const userKey = profile?.id ? `ewu_advising_courses_${profile.id}` : null;
+      const saved = (userKey && localStorage.getItem(userKey)) || localStorage.getItem('ewu_advising_courses_v2');
       const courses = saved ? JSON.parse(saved) : DEFAULT_SLIP_COURSES;
       setEnrolledCourses(courses);
 

@@ -59,10 +59,15 @@ export default function AdvisingSlip() {
   const [activeTab, setActiveTab] = useState('routine'); // default to routine view so they see it right away!
   const [slipImage, setSlipImage] = useState(null);
   const [slipPreview, setSlipPreview] = useState(null);
+  const storageKey = profile?.id ? `ewu_advising_courses_${profile.id}` : 'ewu_advising_courses_v2';
   const [courses, setCourses] = useState(() => {
-    const saved = localStorage.getItem('ewu_advising_courses_v2');
+    const saved = localStorage.getItem(storageKey) || localStorage.getItem('ewu_advising_courses_v2');
     return saved ? JSON.parse(saved) : SAMIN_SLIP_COURSES;
   });
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(courses));
+  }, [courses, storageKey]);
   const [savedNotice, setSavedNotice] = useState(false);
   const [activeRoutineDay, setActiveRoutineDay] = useState(() => {
     const today = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date().getDay()];
@@ -84,9 +89,7 @@ export default function AdvisingSlip() {
     labRoom: '',
   });
 
-  useEffect(() => {
-    localStorage.setItem('ewu_advising_courses_v2', JSON.stringify(courses));
-  }, [courses]);
+
 
   function handleFileSelect(e) {
     const file = e.target.files?.[0];
