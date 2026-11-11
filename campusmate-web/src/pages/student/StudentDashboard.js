@@ -225,44 +225,58 @@ export default function StudentDashboard() {
               <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Take this time to review lecture materials or work on projects.</span>
             </div>
           ) : (
-            <ul className="class-list">
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {todayClasses.map((cls, idx) => (
                 <li
                   key={idx}
-                  className="class-item"
                   style={{
-                    borderLeftColor: cls.type === 'Lab' ? '#10b981' : '#6366f1',
-                    background: cls.type === 'Lab' ? 'linear-gradient(90deg, rgba(16, 185, 129, 0.08), var(--surface-card) 40%)' : 'var(--surface-card)'
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    padding: '12px 14px',
+                    background: cls.type === 'Lab'
+                      ? 'linear-gradient(90deg, rgba(16, 185, 129, 0.08), var(--surface-card) 60%)'
+                      : 'var(--surface-card)',
+                    borderRadius: '10px',
+                    border: '1px solid var(--border)',
+                    borderLeft: `4px solid ${cls.type === 'Lab' ? '#10b981' : '#6366f1'}`,
                   }}
                 >
-                  {/* Time */}
-                  <div className="class-time" style={{ minWidth: '130px', textAlign: 'left', alignItems: 'flex-start' }}>
-                    <span style={{ color: cls.type === 'Lab' ? '#34d399' : '#818cf8', fontSize: '13px', fontWeight: '700' }}>
-                      {cls.time}
-                    </span>
-                    <span className={`badge ${cls.type === 'Lab' ? 'badge-success' : 'badge-primary'}`} style={{ marginTop: '4px', fontSize: '10px' }}>
-                      {cls.type}
-                    </span>
-                  </div>
-
-                  {/* Course Details */}
-                  <div className="class-info" style={{ flex: 1 }}>
+                  {/* Top Row: Course Code + Sec + Type Badge + Time Badge */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <p className="class-name" style={{ margin: 0, fontWeight: '800', fontSize: '15px' }}>{cls.code}</p>
-                      <span className="badge" style={{ background: 'rgba(255,255,255,0.06)', fontSize: '11px' }}>
+                      <span style={{ fontWeight: '800', fontSize: '15px', color: '#ffffff' }}>
+                        {cls.code}
+                      </span>
+                      <span className="badge" style={{ background: 'rgba(255,255,255,0.06)', fontSize: '11px', color: 'var(--text-secondary)' }}>
                         Sec {cls.section}
                       </span>
+                      <span className={`badge ${cls.type === 'Lab' ? 'badge-success' : 'badge-primary'}`} style={{ fontSize: '10px' }}>
+                        {cls.type}
+                      </span>
                     </div>
-                    <p className="class-meta" style={{ marginTop: '2px' }}>
-                      {cls.name} • {cls.credits} Credits
-                    </p>
+
+                    <span style={{
+                      fontSize: '11.5px',
+                      fontWeight: '700',
+                      color: cls.type === 'Lab' ? '#34d399' : '#818cf8',
+                      background: cls.type === 'Lab' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(99, 102, 241, 0.12)',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      border: `1px solid ${cls.type === 'Lab' ? 'rgba(16, 185, 129, 0.25)' : 'rgba(99, 102, 241, 0.25)'}`
+                    }}>
+                      🕐 {cls.time}
+                    </span>
                   </div>
 
-                  {/* Room Allocation */}
-                  <div style={{ textAlign: 'right', minWidth: '140px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
-                      <MapPin size={15} color={cls.type === 'Lab' ? '#34d399' : '#818cf8'} />
-                      <span style={{ fontWeight: '700', fontSize: '13.5px', color: '#f1f5f9' }}>
+                  {/* Bottom Row: Course Title & Room Allocation */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '12.5px', color: 'var(--text-secondary)' }}>
+                      {cls.name} • {cls.credits} Credits
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MapPin size={13} color={cls.type === 'Lab' ? '#34d399' : '#818cf8'} />
+                      <span style={{ fontWeight: '700', fontSize: '12.5px', color: '#f1f5f9' }}>
                         {cls.room}
                       </span>
                     </div>
