@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, Calendar, Bell, BookOpen,
-  Calculator, Search, LogOut, Menu, X, GraduationCap
+  Calculator, Search, LogOut, Menu, X, GraduationCap, Sparkles
 } from 'lucide-react';
 
 export default function Navbar({ sidebarOpen, setSidebarOpen }) {
@@ -17,11 +17,11 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
   }
 
   const studentLinks = [
-    { to: '/student', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-    { to: '/student/routine', icon: <Calendar size={18} />, label: 'Routine' },
+    { to: '/student', icon: <LayoutDashboard size={18} />, label: 'Overview' },
+    { to: '/student/routine', icon: <Calendar size={18} />, label: 'Class Routine' },
+    { to: '/student/materials', icon: <BookOpen size={18} />, label: 'Study Materials' },
+    { to: '/student/cgpa', icon: <Calculator size={18} />, label: 'EWU CGPA' },
     { to: '/student/announcements', icon: <Bell size={18} />, label: 'Announcements' },
-    { to: '/student/materials', icon: <BookOpen size={18} />, label: 'Materials' },
-    { to: '/student/cgpa', icon: <Calculator size={18} />, label: 'CGPA' },
     { to: '/student/lost-found', icon: <Search size={18} />, label: 'Lost & Found' },
   ];
 
@@ -57,26 +57,39 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
           {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
         <span className="navbar-brand">🎓 CampusMate</span>
-        <span className="navbar-role-badge">{profile?.role}</span>
+        <span className="navbar-role-badge">{profile?.role || 'User'}</span>
       </div>
 
-      {/* Sidebar */}
+      {/* Sleek Obsidian Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <span className="sidebar-logo">🎓 CampusMate</span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span className="sidebar-logo">🎓 CampusMate</span>
+            <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '2px' }}>
+              EWU Academic Hub
+            </span>
+          </div>
         </div>
 
         <div className="sidebar-user">
           <div className="user-avatar">
-            {profile?.full_name?.[0]?.toUpperCase() || '?'}
+            {profile?.full_name?.[0]?.toUpperCase() || 'S'}
           </div>
-          <div className="user-info">
-            <p className="user-name">{profile?.full_name}</p>
-            <p className="user-role">{profile?.role}</p>
+          <div className="user-info" style={{ minWidth: 0, flex: 1 }}>
+            <p className="user-name" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {profile?.full_name || 'Student'}
+            </p>
+            <p className="user-role">
+              {profile?.student_id ? `${profile.student_id}` : profile?.role || 'student'}
+            </p>
           </div>
         </div>
 
         <nav className="sidebar-nav">
+          <p style={{ padding: '0 10px', margin: '0 0 8px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
+            Academic Space
+          </p>
+
           {links.map(({ to, icon, label }) => (
             <Link
               key={to}
