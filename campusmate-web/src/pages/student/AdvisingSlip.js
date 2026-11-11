@@ -14,62 +14,25 @@ export const EWU_DAY_MAP = {
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
 
-// Samin's real advising slip data (Fall-2026)
-const SAMIN_SLIP_COURSES = [
-  {
-    id: 'c1',
-    code: 'CSE246',
-    name: 'Algorithms',
-    section: '7',
-    credits: '4.5',
-    sessions: [
-      { type: 'Theory', days: 'SR', daysExpanded: ['Sunday', 'Thursday'], time: '4:50PM - 6:20PM', room: 'FUB-303' },
-      { type: 'Lab', days: 'M', daysExpanded: ['Monday'], time: '4:50PM - 7:50PM', room: '435 (General Purpose Programming Lab)' },
-    ],
-    tuition: '27,000.00'
-  },
-  {
-    id: 'c2',
-    code: 'CSE251',
-    name: 'Electronic Devices & Circuits',
-    section: '5',
-    credits: '4.0',
-    sessions: [
-      { type: 'Theory', days: 'SR', daysExpanded: ['Sunday', 'Thursday'], time: '8:30AM - 10:00AM', room: 'AB1-601' },
-      { type: 'Lab', days: 'T', daysExpanded: ['Tuesday'], time: '8:00AM - 10:00AM', room: '548 (Electrical Circuit Lab)' },
-    ],
-    tuition: '24,000.00'
-  },
-  {
-    id: 'c3',
-    code: 'POP7203',
-    name: 'Population & Development',
-    section: '1',
-    credits: '3.0',
-    sessions: [
-      { type: 'Class', days: 'SR', daysExpanded: ['Sunday', 'Thursday'], time: '11:50AM - 1:20PM', room: '550 (Lecture Gallery)' },
-    ],
-    tuition: '18,000.00'
-  }
-];
-
 export default function AdvisingSlip() {
   const { profile } = useAuth();
-  const [activeTab, setActiveTab] = useState('routine'); // default to routine view so they see it right away!
+  const [activeTab, setActiveTab] = useState('routine');
   const [slipImage, setSlipImage] = useState(null);
   const [slipPreview, setSlipPreview] = useState(null);
-  const isSamin = !profile?.id || profile?.email?.includes('samin') || profile?.full_name?.toLowerCase().includes('samin');
-  const storageKey = profile?.id ? `ewu_advising_courses_${profile.id}` : 'ewu_advising_courses_v2';
+  const storageKey = profile?.id ? `ewu_advising_courses_${profile.id}` : null;
   const [courses, setCourses] = useState(() => {
+    if (!storageKey) return [];
     const saved = localStorage.getItem(storageKey);
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    return isSamin ? SAMIN_SLIP_COURSES : [];
+    return [];
   });
 
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(courses));
+    if (storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(courses));
+    }
   }, [courses, storageKey]);
   const [savedNotice, setSavedNotice] = useState(false);
   const [activeRoutineDay, setActiveRoutineDay] = useState(() => {
@@ -99,14 +62,6 @@ export default function AdvisingSlip() {
     if (!file) return;
     setSlipImage(file);
     setSlipPreview(URL.createObjectURL(file));
-  }
-
-  function loadSampleSlip() {
-    setCourses(SAMIN_SLIP_COURSES);
-    localStorage.setItem('ewu_advising_courses_v2', JSON.stringify(SAMIN_SLIP_COURSES));
-    setSavedNotice(true);
-    setTimeout(() => setSavedNotice(false), 3000);
-    setActiveTab('routine');
   }
 
   function handleAddCourse(e) {
@@ -237,17 +192,25 @@ export default function AdvisingSlip() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-          <button
-            onClick={loadSampleSlip}
-            className="btn btn-secondary"
-            style={{ fontSize: '12px', padding: '6px 14px', borderColor: 'rgba(99, 102, 241, 0.4)' }}
-          >
-            <Wand2 size={14} color="#818cf8" />
-            <span>Load Slip Data</span>
-          </button>
-          <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
-            Student ID: <strong>2024-3-60-187</strong>
-          </span>
+          {courses.length > 0 && (
+            <button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to clear all advising courses?')) {
+                  setCourses([]);
+                }
+              }}
+              className="btn btn-secondary"
+              style={{ fontSize: '12px', padding: '6px 12px' }}
+            >
+              <Trash2 size={13} />
+              <span>Clear Courses</span>
+            </button>
+          )}
+          {profile?.student_id && (
+            <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
+              Student ID: <strong>{profile.student_id}</strong>
+            </span>
+          )}
         </div>
       </div>
 
@@ -292,22 +255,41 @@ export default function AdvisingSlip() {
       {/* TAB 1: WEEKLY ROUTINE */}
       {activeTab === 'routine' && (
         <div>
-          {/* Day Selector Pills */}
-          <div className="day-tabs" style={{ marginBottom: '20px' }}>
-            {DAYS.map(day => (
-              <button
-                key={day}
-                onClick={() => setActiveRoutineDay(day)}
-                className={`day-tab ${activeRoutineDay === day ? 'active' : ''}`}
-                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                <span>{day}</span>
-                <span className="badge" style={{ background: activeRoutineDay === day ? 'rgba(255,255,255,0.25)' : 'rgba(99, 102, 241, 0.15)', fontSize: '10px' }}>
-                  {weeklyRoutine[day]?.length || 0}
-                </span>
-              </button>
-            ))}
-          </div>
+          {courses.length === 0 ? (
+            <div className="card" style={{ padding: '40px 20px', textAlign: 'center' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '8px' }}>No Courses in Advising Slip</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '13.5px', maxWidth: '520px', margin: '0 auto 20px' }}>
+                You have not added your courses yet. Upload your East West University advising slip image or add your courses manually to build your routine and Google Classroom coursework!
+              </p>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button className="btn btn-primary" onClick={() => setActiveTab('upload')}>
+                  <Upload size={16} />
+                  <span>Upload Advising Slip</span>
+                </button>
+                <button className="btn btn-secondary" onClick={() => setActiveTab('add')}>
+                  <Plus size={16} />
+                  <span>Add Courses Manually</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Day Selector Pills */}
+              <div className="day-tabs" style={{ marginBottom: '20px' }}>
+                {DAYS.map(day => (
+                  <button
+                    key={day}
+                    onClick={() => setActiveRoutineDay(day)}
+                    className={`day-tab ${activeRoutineDay === day ? 'active' : ''}`}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    <span>{day}</span>
+                    <span className="badge" style={{ background: activeRoutineDay === day ? 'rgba(255,255,255,0.25)' : 'rgba(99, 102, 241, 0.15)', fontSize: '10px' }}>
+                      {weeklyRoutine[day]?.length || 0}
+                    </span>
+                  </button>
+                ))}
+              </div>
 
           {/* Routine Schedule View for Active Day */}
           <div className="card">
@@ -423,6 +405,8 @@ export default function AdvisingSlip() {
               </div>
             ))}
           </div>
+          </>
+          )}
         </div>
       )}
 

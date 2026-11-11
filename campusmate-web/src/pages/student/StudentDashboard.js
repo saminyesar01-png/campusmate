@@ -5,39 +5,6 @@ import { Calendar, Bell, BookOpen, TrendingUp, MapPin, CheckCircle, ArrowRight }
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 
-// Samin's East West University Fall-2026 Advising Slip Courses
-const DEFAULT_SLIP_COURSES = [
-  {
-    code: 'CSE246',
-    name: 'Algorithms',
-    section: '7',
-    credits: '4.5',
-    sessions: [
-      { type: 'Theory', daysExpanded: ['Sunday', 'Thursday'], time: '4:50PM - 6:20PM', room: 'FUB-303' },
-      { type: 'Lab', daysExpanded: ['Monday'], time: '4:50PM - 7:50PM', room: '435 (Programming Lab)' },
-    ]
-  },
-  {
-    code: 'CSE251',
-    name: 'Electronic Devices & Circuits',
-    section: '5',
-    credits: '4.0',
-    sessions: [
-      { type: 'Theory', daysExpanded: ['Sunday', 'Thursday'], time: '8:30AM - 10:00AM', room: 'AB1-601' },
-      { type: 'Lab', daysExpanded: ['Tuesday'], time: '8:00AM - 10:00AM', room: '548 (Circuit Lab)' },
-    ]
-  },
-  {
-    code: 'POP7203',
-    name: 'Population & Development',
-    section: '1',
-    credits: '3.0',
-    sessions: [
-      { type: 'Class', daysExpanded: ['Sunday', 'Thursday'], time: '11:50AM - 1:20PM', room: '550 (Lecture Gallery)' },
-    ]
-  }
-];
-
 export default function StudentDashboard() {
   const { profile } = useAuth();
   const [announcements, setAnnouncements] = useState([]);
@@ -51,11 +18,10 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     async function fetchData() {
-      // 1. Read Advising Slip Courses (User-specific or fallback)
-      const isSamin = !profile?.id || profile?.email?.includes('samin') || profile?.full_name?.toLowerCase().includes('samin');
+      // 1. Read Advising Slip Courses (User-specific only)
       const userKey = profile?.id ? `ewu_advising_courses_${profile.id}` : null;
-      const saved = userKey ? localStorage.getItem(userKey) : localStorage.getItem('ewu_advising_courses_v2');
-      const courses = saved ? JSON.parse(saved) : (isSamin ? DEFAULT_SLIP_COURSES : []);
+      const saved = userKey ? localStorage.getItem(userKey) : null;
+      const courses = saved ? JSON.parse(saved) : [];
       setEnrolledCourses(courses);
 
       // 2. Extract classes scheduled for TODAY (e.g. Thursday has 3 classes!)
@@ -101,25 +67,16 @@ export default function StudentDashboard() {
         .order('created_at', { ascending: false })
         .limit(4);
 
-      // 4. Fetch upcoming post-mid assignments & lab reports (from Classroom sync)
-      const DEFAULT_POST_MID_TASKS = [
-        { id: 't1', title: 'Lab Report 4: CE Amplifier Frequency Response', courseCode: 'CSE251', dueDate: '2026-11-17T17:00:00', type: 'Lab Report' },
-        { id: 't2', title: 'Lab Task 5: Dijkstra & Bellman-Ford', courseCode: 'CSE246', dueDate: '2026-11-16T23:59:00', type: 'Lab Task' },
-        { id: 't3', title: 'Quiz 3: Greedy Methods & Huffman Coding', courseCode: 'CSE246', dueDate: '2026-11-19T16:50:00', type: 'Quiz' },
-        { id: 't4', title: 'Term Paper Proposal: Urbanization Trends', courseCode: 'POP7203', dueDate: '2026-11-24T23:59:00', type: 'Term Paper' },
-      ];
-
-      const classroomKey = profile?.id ? `ewu_classroom_stream_${profile.id}` : 'ewu_classroom_stream_v3';
-      const savedClassroom = localStorage.getItem(classroomKey);
+      // 4. Fetch upcoming post-mid assignments & lab reports (User-specific only)
+      const classroomKey = profile?.id ? `ewu_classroom_stream_${profile.id}` : null;
+      const savedClassroom = classroomKey ? localStorage.getItem(classroomKey) : null;
       let classroomTasks = [];
       if (savedClassroom) {
         try {
           const parsed = JSON.parse(savedClassroom)
             .filter(t => t.category !== 'lecture' && (t.status !== 'completed' && t.status !== 'submitted') && t.dueDate);
-          if (parsed.length > 0) classroomTasks = parsed;
+          classroomTasks = parsed;
         } catch (e) {}
-      } else if (isSamin) {
-        classroomTasks = DEFAULT_POST_MID_TASKS;
       }
 
       setAnnouncements(ann || []);
@@ -154,18 +111,28 @@ export default function StudentDashboard() {
           </div>
 
           <h1 className="page-title">
-            Good {getGreeting()}, {profile?.full_name?.split(' ')[0] || 'Samin'}! 👋
+            Good {getGreeting()}{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}! 👋
           </h1>
           <p className="page-subtitle">
-            You have <strong style={{ color: '#818cf8' }}>{todayClasses.length} classes scheduled today ({today})</strong> and{' '}
-            <strong style={{ color: '#34d399' }}>{enrolledCourses.length} registered courses</strong> ({totalCredits.toFixed(1)} Credits) from your advising slip.
+            {enrolledCourses.length > 0 ? (
+              <>
+                You have <strong style={{ color: '#818cf8' }}>{todayClasses.length} classes scheduled today ({today})</strong> and{' '}
+                <strong style={{ color: '#34d399' }}>{enrolledCourses.length} registered courses</strong> ({totalCredits.toFixed(1)} Credits) from your advising slip.
+              </>
+            ) : (
+              <>
+                Welcome to CampusMate! Please <Link to="/student/advising" style={{ color: '#818cf8', textDecoration: 'underline' }}>add your Advising Slip</Link> to view your daily routine, classes, and coursework.
+              </>
+            )}
           </p>
         </div>
 
         <div className="dashboard-header-meta">
-          <span className="badge badge-primary" style={{ padding: '6px 14px', fontSize: '12.5px', whiteSpace: 'nowrap' }}>
-            ID: {profile?.student_id || '2024-3-60-187'}
-          </span>
+          {profile?.student_id && (
+            <span className="badge badge-primary" style={{ padding: '6px 14px', fontSize: '12.5px', whiteSpace: 'nowrap' }}>
+              ID: {profile.student_id}
+            </span>
+          )}
           <span className="dashboard-header-date" style={{ fontSize: '12px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
             {format(new Date(), 'EEEE, MMMM d, yyyy')}
           </span>
@@ -179,14 +146,14 @@ export default function StudentDashboard() {
           label={`Classes Today (${today.slice(0, 3)})`}
           value={todayClasses.length}
           color="blue"
-          sublabel={todayClasses.length > 0 ? "Next: " + todayClasses[0].code : "No classes today"}
+          sublabel={todayClasses.length > 0 ? "Next: " + todayClasses[0].code : (enrolledCourses.length > 0 ? "No classes today" : "Add advising slip")}
         />
         <StatCard
           icon={<TrendingUp size={20} />}
           label="Enrolled Courses"
           value={enrolledCourses.length}
           color="green"
-          sublabel={`${totalCredits.toFixed(1)} Total Credits`}
+          sublabel={enrolledCourses.length > 0 ? `${totalCredits.toFixed(1)} Total Credits` : "None added yet"}
         />
         <StatCard
           icon={<Bell size={20} />}
@@ -234,7 +201,16 @@ export default function StudentDashboard() {
             </Link>
           </div>
 
-          {todayClasses.length === 0 ? (
+          {enrolledCourses.length === 0 ? (
+            <div style={{ padding: '36px 14px', textAlign: 'center' }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: '0 0 12px' }}>
+                No courses in advising slip yet. 📋
+              </p>
+              <Link to="/student/advising" className="btn btn-primary" style={{ display: 'inline-flex', fontSize: '12.5px', padding: '8px 16px' }}>
+                Add Advising Slip Courses
+              </Link>
+            </div>
+          ) : todayClasses.length === 0 ? (
             <div style={{ padding: '36px 10px', textAlign: 'center' }}>
               <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: '0 0 6px' }}>No classes on {today}! 🎉</p>
               <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Take this time to review lecture materials or work on projects.</span>

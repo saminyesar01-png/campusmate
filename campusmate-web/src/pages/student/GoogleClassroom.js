@@ -7,134 +7,6 @@ import {
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 
-// Samin's Handcrafted Classroom Stream (Fall 2026 Post-Mid)
-const SAMIN_CLASSROOM_STREAM = [
-  {
-    id: 'mat-1',
-    courseCode: 'CSE246',
-    courseName: 'Algorithms (Sec 7)',
-    title: 'Lecture 14: Dynamic Programming - 0/1 Knapsack & Matrix Chain',
-    category: 'lecture',
-    date: '2026-11-10T10:30:00',
-    dueDate: null,
-    fileType: 'PDF Slides',
-    classroomUrl: 'https://classroom.google.com',
-    description: 'Post-mid slides covering bottom-up DP table construction, optimal substructure, and overlapping subproblems.',
-  },
-  {
-    id: 'mat-2',
-    courseCode: 'CSE251',
-    courseName: 'Electronic Devices & Circuits (Sec 5)',
-    title: 'Lecture 12: BJT Small Signal Analysis & Hybrid-Pi Model',
-    category: 'lecture',
-    date: '2026-11-09T09:00:00',
-    dueDate: null,
-    fileType: 'PowerPoint',
-    classroomUrl: 'https://classroom.google.com',
-    description: 'Read Chapter 5 from Boylestad before next Tuesday theory slot in AB1-601.',
-  },
-  {
-    id: 'mat-3',
-    courseCode: 'POP7203',
-    courseName: 'Population & Development (Sec 1)',
-    title: 'Reading Material: Fertility Decline & Economic Growth in South Asia',
-    category: 'lecture',
-    date: '2026-11-08T12:00:00',
-    dueDate: null,
-    fileType: 'PDF Document',
-    classroomUrl: 'https://classroom.google.com',
-    description: 'Required reading for next Thursday lecture gallery discussion in Room 550.',
-  },
-  {
-    id: 'lab-1',
-    courseCode: 'CSE251',
-    courseName: 'Electronic Devices & Circuits Lab (Sec 5)',
-    title: 'Lab Report 4: Common Emitter (CE) Amplifier Frequency Response',
-    category: 'lab_report',
-    date: '2026-11-10T14:00:00',
-    dueDate: '2026-11-17T17:00:00',
-    points: 25,
-    status: 'assigned',
-    classroomUrl: 'https://classroom.google.com',
-    description: 'Submit calculated midband voltage gain (Av) and cutoff frequencies (fL, fH) with Proteus simulation graphs.',
-  },
-  {
-    id: 'lab-2',
-    courseCode: 'CSE246',
-    courseName: 'Algorithms Lab (Sec 7)',
-    title: 'Lab Task 5: Dijkstra and Bellman-Ford Shortest Path Implementation',
-    category: 'lab_report',
-    date: '2026-11-09T18:00:00',
-    dueDate: '2026-11-16T23:59:00',
-    points: 30,
-    status: 'assigned',
-    classroomUrl: 'https://classroom.google.com',
-    description: 'Upload your C++ / Java source code with complexity analysis and test cases executed in Lab 435.',
-  },
-  {
-    id: 'asg-1',
-    courseCode: 'POP7203',
-    courseName: 'Population & Development (Sec 1)',
-    title: 'Term Paper Proposal: Urbanization & Migration Trends in Dhaka City',
-    category: 'assignment',
-    date: '2026-11-07T11:00:00',
-    dueDate: '2026-11-24T23:59:00',
-    points: 40,
-    status: 'assigned',
-    classroomUrl: 'https://classroom.google.com',
-    description: 'Submit 2-page proposal outlining research objectives, survey methodology, and key hypotheses.',
-  },
-  {
-    id: 'qz-1',
-    courseCode: 'CSE246',
-    courseName: 'Algorithms (Sec 7)',
-    title: 'Quiz 3: Greedy Algorithms & Huffman Coding',
-    category: 'quiz',
-    date: '2026-11-11T12:00:00',
-    dueDate: '2026-11-19T16:50:00',
-    points: 20,
-    status: 'assigned',
-    classroomUrl: 'https://classroom.google.com',
-    description: 'In-class 20 min quiz during Thursday theory session in FUB-303.',
-  },
-  {
-    id: 'ex-mid1',
-    courseCode: 'CSE251',
-    courseName: 'Electronic Devices & Circuits (Sec 5)',
-    title: 'Midterm Examination (Fall 2026)',
-    category: 'exam',
-    date: '2026-11-03T08:30:00',
-    dueDate: '2026-11-03T10:00:00',
-    status: 'completed',
-    classroomUrl: 'https://classroom.google.com',
-    description: 'Midterm exam completed last week. Scripts are currently being graded by faculty.',
-  },
-  {
-    id: 'ex-mid2',
-    courseCode: 'CSE246',
-    courseName: 'Algorithms (Sec 7)',
-    title: 'Midterm Examination (Theory)',
-    category: 'exam',
-    date: '2026-11-05T16:50:00',
-    dueDate: '2026-11-05T18:20:00',
-    status: 'completed',
-    classroomUrl: 'https://classroom.google.com',
-    description: 'Midterm exam completed last week. Average scores will be published in classroom.',
-  },
-  {
-    id: 'ex-fin1',
-    courseCode: 'CSE246',
-    courseName: 'Algorithms (Sec 7)',
-    title: 'Final Examination (Comprehensive)',
-    category: 'exam',
-    date: '2026-11-12T00:00:00',
-    dueDate: '2026-12-28T09:00:00',
-    status: 'upcoming',
-    classroomUrl: 'https://classroom.google.com',
-    description: 'Official EWU Fall-2026 Final Examination slot.',
-  }
-];
-
 // Helper to generate dynamic coursework for any student's registered courses
 function generateClassroomForCourses(courses) {
   if (!courses || courses.length === 0) return [];
@@ -241,34 +113,27 @@ function generateClassroomForCourses(courses) {
 
 export default function GoogleClassroom() {
   const { profile } = useAuth();
-  const isSamin = !profile?.id || profile?.email?.includes('samin') || profile?.full_name?.toLowerCase().includes('samin');
   
-  // 1. Load enrolled courses from this student's advising slip
-  const advisingKey = profile?.id ? `ewu_advising_courses_${profile.id}` : 'ewu_advising_courses_v2';
+  // 1. Load enrolled courses from this student's advising slip (User-specific only)
+  const advisingKey = profile?.id ? `ewu_advising_courses_${profile.id}` : null;
   const [enrolledCourses] = useState(() => {
+    if (!advisingKey) return [];
     const saved = localStorage.getItem(advisingKey);
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    return isSamin ? [
-      { code: 'CSE246', name: 'Algorithms', section: '7', credits: '4.5' },
-      { code: 'CSE251', name: 'Electronic Devices & Circuits', section: '5', credits: '4.0' },
-      { code: 'POP7203', name: 'Population & Development', section: '1', credits: '3.0' },
-    ] : [];
+    return [];
   });
 
   // 2. Load or generate this student's isolated classroom stream
-  const classroomKey = profile?.id ? `ewu_classroom_stream_${profile.id}` : 'ewu_classroom_stream_v3';
+  const classroomKey = profile?.id ? `ewu_classroom_stream_${profile.id}` : null;
   const [stream, setStream] = useState(() => {
+    if (!classroomKey) return [];
     const saved = localStorage.getItem(classroomKey);
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    // If Samin, load Samin's full sample stream
-    if (isSamin) {
-      return SAMIN_CLASSROOM_STREAM;
-    }
-    // If another student has advising courses, generate for their exact courses!
+    // Only generate initial stream if student has enrolled courses in their advising slip!
     if (enrolledCourses.length > 0) {
       return generateClassroomForCourses(enrolledCourses);
     }
