@@ -141,7 +141,7 @@ export default function StudentDashboard() {
     <div className="page">
       {/* Hero Welcome Banner (Stitch Inspired) */}
       <div className="dashboard-header">
-        <div>
+        <div className="dashboard-header-main">
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: '20px', background: 'rgba(99, 102, 241, 0.15)', border: '1px solid rgba(99, 102, 241, 0.3)', marginBottom: '12px' }}>
             <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
             <span style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a5b4fc' }}>
@@ -149,20 +149,20 @@ export default function StudentDashboard() {
             </span>
           </div>
 
-          <h1 className="page-title" style={{ fontSize: '28px', margin: '0 0 6px' }}>
+          <h1 className="page-title">
             Good {getGreeting()}, {profile?.full_name?.split(' ')[0] || 'Samin'}! 👋
           </h1>
-          <p className="page-subtitle" style={{ fontSize: '14px', maxWidth: '650px' }}>
+          <p className="page-subtitle">
             You have <strong style={{ color: '#818cf8' }}>{todayClasses.length} classes scheduled today ({today})</strong> and{' '}
             <strong style={{ color: '#34d399' }}>{enrolledCourses.length} registered courses</strong> ({totalCredits.toFixed(1)} Credits) from your advising slip.
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-          <span className="badge badge-primary" style={{ padding: '6px 14px', fontSize: '12.5px' }}>
+        <div className="dashboard-header-meta">
+          <span className="badge badge-primary" style={{ padding: '6px 14px', fontSize: '12.5px', whiteSpace: 'nowrap' }}>
             ID: {profile?.student_id || '2024-3-60-187'}
           </span>
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+          <span className="dashboard-header-date" style={{ fontSize: '12px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
             {format(new Date(), 'EEEE, MMMM d, yyyy')}
           </span>
         </div>
@@ -390,12 +390,12 @@ function StatCard({ icon, label, value, color, sublabel }) {
 
 function QuickAction({ to, icon, label, desc }) {
   return (
-    <Link to={to} className="quick-action-btn" style={{ flexDirection: 'column', alignItems: 'flex-start', minWidth: '190px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <Link to={to} className="quick-action-btn">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
         <span className="quick-action-icon">{icon}</span>
-        <span style={{ color: '#ffffff', fontWeight: '700' }}>{label}</span>
+        <span className="quick-action-label" style={{ color: '#ffffff', fontWeight: '700' }}>{label}</span>
       </div>
-      {desc && <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{desc}</span>}
+      {desc && <span className="quick-action-desc" style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{desc}</span>}
     </Link>
   );
 }

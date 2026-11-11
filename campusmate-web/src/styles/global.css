@@ -313,6 +313,18 @@ h1, h2, h3, h4, .font-heading {
   box-shadow: var(--shadow);
 }
 
+.dashboard-header-main {
+  flex: 1;
+}
+
+.dashboard-header-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .dashboard-header::before {
   content: '';
   position: absolute;
@@ -1088,18 +1100,189 @@ select option {
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-/* ---- RESPONSIVE ---- */
+/* ---- RESPONSIVE MOBILE STYLES ---- */
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
 @media (max-width: 768px) {
-  .navbar-topbar { display: flex; }
-  .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; top: var(--topbar-height); }
-  .sidebar.open { transform: translateX(0); }
-  .app-main { margin-left: 0; }
-  .app-content { padding: 18px 16px; }
-  .form-row { grid-template-columns: 1fr; }
-  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .navbar-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    backdrop-filter: blur(12px);
+    background: rgba(13, 18, 31, 0.95);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    height: var(--topbar-height);
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    top: var(--topbar-height);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    display: block !important;
+    background: rgba(0, 0, 0, 0.65) !important;
+    backdrop-filter: blur(4px);
+    z-index: 95;
+  }
+
+  .app-main {
+    margin-left: 0;
+  }
+
+  .app-content {
+    padding: 16px 14px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* Header banner wraps nicely on mobile */
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px 16px;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .dashboard-header-main {
+    width: 100%;
+  }
+
+  .dashboard-header .page-title {
+    font-size: 22px;
+    line-height: 1.25;
+    margin: 0 0 6px;
+  }
+
+  .dashboard-header .page-subtitle {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .dashboard-header-meta {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 12px;
+    margin-top: 2px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* 2x2 grid for metric stats */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .stat-card {
+    padding: 12px 10px;
+    gap: 10px;
+  }
+
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
+  .stat-label {
+    font-size: 11.5px;
+    line-height: 1.25;
+  }
+
+  /* 2-column clean grid for quick actions */
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .quick-action-btn {
+    min-width: 0 !important;
+    padding: 10px 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .quick-action-label {
+    font-size: 12px;
+  }
+
+  .quick-action-desc {
+    font-size: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card {
+    padding: 16px 14px;
+  }
+
+  .card-header {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
 @media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr; }
-  .auth-card { padding: 26px 20px; }
+  .app-content {
+    padding: 14px 10px;
+  }
+
+  .dashboard-header {
+    padding: 16px 12px;
+  }
+
+  .dashboard-header .page-title {
+    font-size: 20px;
+  }
+
+  .dashboard-header-meta {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .dashboard-header-date {
+    font-size: 11px !important;
+  }
+
+  .auth-card {
+    padding: 24px 16px;
+  }
 }
