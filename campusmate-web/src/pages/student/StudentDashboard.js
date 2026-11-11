@@ -1,14 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Calendar, Bell, BookOpen, Calculator, Search, TrendingUp, Sparkles, Clock, CheckCircle } from 'lucide-react';
+import { Calendar, Bell, BookOpen, TrendingUp, Clock, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
+
+// Samin's East West University Fall-2026 Advising Slip Courses
+const DEFAULT_SLIP_COURSES = [
+  {
+    code: 'CSE246',
+    name: 'Algorithms',
+    section: '7',
+    credits: '4.5',
+    sessions: [
+      { type: 'Theory', daysExpanded: ['Sunday', 'Thursday'], time: '4:50PM - 6:20PM', room: 'FUB-303' },
+      { type: 'Lab', daysExpanded: ['Monday'], time: '4:50PM - 7:50PM', room: '435 (Programming Lab)' },
+    ]
+  },
+  {
+    code: 'CSE251',
+    name: 'Electronic Devices & Circuits',
+    section: '5',
+    credits: '4.0',
+    sessions: [
+      { type: 'Theory', daysExpanded: ['Sunday', 'Thursday'], time: '8:30AM - 10:00AM', room: 'AB1-601' },
+      { type: 'Lab', daysExpanded: ['Tuesday'], time: '8:00AM - 10:00AM', room: '548 (Circuit Lab)' },
+    ]
+  },
+  {
+    code: 'POP7203',
+    name: 'Population & Development',
+    section: '1',
+    credits: '3.0',
+    sessions: [
+      { type: 'Class', daysExpanded: ['Sunday', 'Thursday'], time: '11:50AM - 1:20PM', room: '550 (Lecture Gallery)' },
+    ]
+  }
+];
 
 export default function StudentDashboard() {
   const { profile } = useAuth();
   const [announcements, setAnnouncements] = useState([]);
   const [todayClasses, setTodayClasses] = useState([]);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [upcomingAssignments, setUpcomingAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,7 +51,47 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     async function fetchData() {
-      // Fetch recent announcements
+      // 1. Read Advising Slip Courses
+      const saved = localStorage.getItem('ewu_advising_courses_v2');
+      const courses = saved ? JSON.parse(saved) : DEFAULT_SLIP_COURSES;
+      setEnrolledCourses(courses);
+
+      // 2. Extract classes scheduled for TODAY (e.g. Thursday has 3 classes!)
+      const classesForToday = [];
+      courses.forEach(c => {
+        c.sessions?.forEach(s => {
+          if (s.daysExpanded?.includes(today)) {
+            classesForToday.push({
+              code: c.code,
+              name: c.name,
+              section: c.section,
+              credits: c.credits,
+              type: s.type,
+              time: s.time,
+              room: s.room,
+            });
+          }
+        });
+      });
+
+      // Sort today's classes by time
+      classesForToday.sort((a, b) => {
+        const getMinutes = (str) => {
+          const match = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
+          if (!match) return 0;
+          let h = parseInt(match[1]);
+          const m = parseInt(match[2]);
+          const ampm = match[3].toUpperCase();
+          if (ampm === 'PM' && h !== 12) h += 12;
+          if (ampm === 'AM' && h === 12) h = 0;
+          return h * 60 + m;
+        };
+        return getMinutes(a.time) - getMinutes(b.time);
+      });
+
+      setTodayClasses(classesForToday);
+
+      // 3. Fetch announcements
       const { data: ann } = await supabase
         .from('announcements')
         .select('*, profiles(full_name)')
@@ -25,14 +99,7 @@ export default function StudentDashboard() {
         .order('created_at', { ascending: false })
         .limit(4);
 
-      // Fetch today's classes
-      const { data: schedule } = await supabase
-        .from('class_schedule')
-        .select('*, courses(name, code, teacher_id, profiles(full_name))')
-        .eq('day_of_week', today)
-        .order('start_time');
-
-      // Fetch upcoming assignments
+      // 4. Fetch upcoming assignments
       const { data: assignments } = await supabase
         .from('assignments')
         .select('*, courses(name, code)')
@@ -41,13 +108,14 @@ export default function StudentDashboard() {
         .limit(4);
 
       setAnnouncements(ann || []);
-      setTodayClasses(schedule || []);
       setUpcomingAssignments(assignments || []);
       setLoading(false);
     }
 
     fetchData();
   }, [today]);
+
+  const totalCredits = enrolledCourses.reduce((sum, c) => sum + (parseFloat(c.credits) || 0), 0);
 
   if (loading) {
     return (
@@ -71,75 +139,134 @@ export default function StudentDashboard() {
           </div>
 
           <h1 className="page-title" style={{ fontSize: '28px', margin: '0 0 6px' }}>
-            Good {getGreeting()}, {profile?.full_name?.split(' ')[0] || 'Student'}! 👋
+            Good {getGreeting()}, {profile?.full_name?.split(' ')[0] || 'Samin'}! 👋
           </h1>
-          <p className="page-subtitle" style={{ fontSize: '14px', maxWidth: '600px' }}>
-            You have <span style={{ color: '#818cf8', fontWeight: '600' }}>{todayClasses.length} classes today</span> and{' '}
-            <span style={{ color: '#f87171', fontWeight: '600' }}>{upcomingAssignments.length} pending deadlines</span> this week.
+          <p className="page-subtitle" style={{ fontSize: '14px', maxWidth: '650px' }}>
+            You have <strong style={{ color: '#818cf8' }}>{todayClasses.length} classes scheduled today ({today})</strong> and{' '}
+            <strong style={{ color: '#34d399' }}>{enrolledCourses.length} registered courses</strong> ({totalCredits.toFixed(1)} Credits) from your advising slip.
           </p>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-          {profile?.student_id && (
-            <span className="badge badge-primary" style={{ padding: '6px 14px', fontSize: '12.5px' }}>
-              ID: {profile.student_id}
-            </span>
-          )}
+          <span className="badge badge-primary" style={{ padding: '6px 14px', fontSize: '12.5px' }}>
+            ID: {profile?.student_id || '2024-3-60-187'}
+          </span>
           <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
             {format(new Date(), 'EEEE, MMMM d, yyyy')}
           </span>
         </div>
       </div>
 
-      {/* Metrics Stat Cards */}
+      {/* Metrics Stat Cards Linked to Advising Slip */}
       <div className="stats-grid">
-        <StatCard icon={<Calendar size={20} />} label="Classes Today" value={todayClasses.length} color="blue" />
-        <StatCard icon={<Bell size={20} />} label="Announcements" value={announcements.length} color="purple" />
-        <StatCard icon={<BookOpen size={20} />} label="Due Assignments" value={upcomingAssignments.length} color="red" />
-        <StatCard icon={<TrendingUp size={20} />} label="Enrolled Courses" value="5" color="green" />
+        <StatCard
+          icon={<Calendar size={20} />}
+          label={`Classes Today (${today.slice(0, 3)})`}
+          value={todayClasses.length}
+          color="blue"
+          sublabel={todayClasses.length > 0 ? "Next: " + todayClasses[0].code : "No classes today"}
+        />
+        <StatCard
+          icon={<TrendingUp size={20} />}
+          label="Enrolled Courses"
+          value={enrolledCourses.length}
+          color="green"
+          sublabel={`${totalCredits.toFixed(1)} Total Credits`}
+        />
+        <StatCard
+          icon={<Bell size={20} />}
+          label="Announcements"
+          value={announcements.length}
+          color="purple"
+          sublabel="Campus & Course"
+        />
+        <StatCard
+          icon={<BookOpen size={20} />}
+          label="Due Assignments"
+          value={upcomingAssignments.length}
+          color="red"
+          sublabel="This semester"
+        />
       </div>
 
-      {/* Fast Shortcuts */}
+      {/* Quick Shortcuts */}
       <div className="section">
         <h2 className="section-title">Quick Academic Actions</h2>
         <div className="quick-actions">
-          <QuickAction to="/student/routine" icon="📅" label="Class Routine" desc="Check timings & rooms" />
-          <QuickAction to="/student/cgpa" icon="🧮" label="EWU CGPA Calculator" desc="Official 4.00 scale & retakes" />
-          <QuickAction to="/student/materials" icon="📚" label="Study Materials" desc="Lecture notes & slides" />
-          <QuickAction to="/student/announcements" icon="📢" label="Announcements" desc="Campus & course notices" />
-          <QuickAction to="/student/lost-found" icon="🔍" label="Lost & Found" desc="Missing campus items" />
+          <QuickAction to="/student/advising" icon="📋" label="Advising Slip & Routine" desc="View Fall-2026 slip & week matrix" />
+          <QuickAction to="/student/cgpa" icon="🧮" label="EWU CGPA Calculator" desc="Official 4.00 scale & retake policy" />
+          <QuickAction to="/student/materials" icon="📚" label="Study Materials" desc="Lecture slides & notes" />
+          <QuickAction to="/student/announcements" icon="📢" label="Announcements" desc="Campus notices & updates" />
+          <QuickAction to="/student/lost-found" icon="🔍" label="Lost & Found" desc="Report or find items" />
         </div>
       </div>
 
       <div className="dashboard-grid">
-        {/* Today's Schedule Card */}
+        {/* Today's Schedule Card (Linked to Advising Slip) */}
         <div className="card">
           <div className="card-header">
             <div>
-              <h2 className="card-title" style={{ margin: 0 }}>📅 Today's Schedule ({today})</h2>
+              <h2 className="card-title" style={{ margin: 0 }}>
+                📅 Today's Schedule ({today})
+              </h2>
+              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                {todayClasses.length} classes from your advising slip
+              </span>
             </div>
-            <Link to="/student/routine" className="card-link">View full week →</Link>
+            <Link to="/student/advising" className="card-link" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>View slip routine</span>
+              <ArrowRight size={14} />
+            </Link>
           </div>
 
           {todayClasses.length === 0 ? (
-            <div style={{ padding: '30px 10px', textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: '0 0 6px' }}>No classes scheduled for {today} 🎉</p>
-              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Take this time to review study materials or catch up on coursework.</span>
+            <div style={{ padding: '36px 10px', textAlign: 'center' }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: '0 0 6px' }}>No classes on {today}! 🎉</p>
+              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Take this time to review lecture materials or work on projects.</span>
             </div>
           ) : (
             <ul className="class-list">
-              {todayClasses.map(cls => (
-                <li key={cls.id} className="class-item">
-                  <div className="class-time">
-                    {cls.start_time?.slice(0, 5)} - {cls.end_time?.slice(0, 5)}
+              {todayClasses.map((cls, idx) => (
+                <li
+                  key={idx}
+                  className="class-item"
+                  style={{
+                    borderLeftColor: cls.type === 'Lab' ? '#10b981' : '#6366f1',
+                    background: cls.type === 'Lab' ? 'linear-gradient(90deg, rgba(16, 185, 129, 0.08), var(--surface-card) 40%)' : 'var(--surface-card)'
+                  }}
+                >
+                  {/* Time */}
+                  <div className="class-time" style={{ minWidth: '130px', textAlign: 'left', alignItems: 'flex-start' }}>
+                    <span style={{ color: cls.type === 'Lab' ? '#34d399' : '#818cf8', fontSize: '13px', fontWeight: '700' }}>
+                      {cls.time}
+                    </span>
+                    <span className={`badge ${cls.type === 'Lab' ? 'badge-success' : 'badge-primary'}`} style={{ marginTop: '4px', fontSize: '10px' }}>
+                      {cls.type}
+                    </span>
                   </div>
+
+                  {/* Course Details */}
                   <div className="class-info" style={{ flex: 1 }}>
-                    <p className="class-name">{cls.courses?.name || 'Class Session'}</p>
-                    <p className="class-meta">
-                      {cls.courses?.code} {cls.room && `· Room ${cls.room}`}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <p className="class-name" style={{ margin: 0, fontWeight: '800', fontSize: '15px' }}>{cls.code}</p>
+                      <span className="badge" style={{ background: 'rgba(255,255,255,0.06)', fontSize: '11px' }}>
+                        Sec {cls.section}
+                      </span>
+                    </div>
+                    <p className="class-meta" style={{ marginTop: '2px' }}>
+                      {cls.name} • {cls.credits} Credits
                     </p>
                   </div>
-                  <span className="badge badge-primary">Active</span>
+
+                  {/* Room Allocation */}
+                  <div style={{ textAlign: 'right', minWidth: '140px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
+                      <MapPin size={15} color={cls.type === 'Lab' ? '#34d399' : '#818cf8'} />
+                      <span style={{ fontWeight: '700', fontSize: '13.5px', color: '#f1f5f9' }}>
+                        {cls.room}
+                      </span>
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -207,13 +334,16 @@ export default function StudentDashboard() {
   );
 }
 
-function StatCard({ icon, label, value, color }) {
+function StatCard({ icon, label, value, color, sublabel }) {
   return (
     <div className={`stat-card stat-${color}`}>
       <div className="stat-icon">{icon}</div>
-      <div>
+      <div style={{ flex: 1 }}>
         <p className="stat-value">{value}</p>
         <p className="stat-label">{label}</p>
+        {sublabel && (
+          <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '3px 0 0' }}>{sublabel}</p>
+        )}
       </div>
     </div>
   );
@@ -221,7 +351,7 @@ function StatCard({ icon, label, value, color }) {
 
 function QuickAction({ to, icon, label, desc }) {
   return (
-    <Link to={to} className="quick-action-btn" style={{ flexDirection: 'column', alignItems: 'flex-start', minWidth: '180px' }}>
+    <Link to={to} className="quick-action-btn" style={{ flexDirection: 'column', alignItems: 'flex-start', minWidth: '190px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span className="quick-action-icon">{icon}</span>
         <span style={{ color: '#ffffff', fontWeight: '700' }}>{label}</span>
