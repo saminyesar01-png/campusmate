@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, Calendar, Bell, BookOpen,
-  Calculator, Search, LogOut, Menu, X, GraduationCap, Sparkles
+  Calculator, Search, LogOut, Menu, X, GraduationCap, Sparkles, FileText
 } from 'lucide-react';
 
 export default function Navbar({ sidebarOpen, setSidebarOpen }) {
@@ -18,6 +18,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
 
   const studentLinks = [
     { to: '/student', icon: <LayoutDashboard size={18} />, label: 'Overview' },
+    { to: '/student/advising', icon: <FileText size={18} />, label: 'Advising & Routine' },
     { to: '/student/routine', icon: <Calendar size={18} />, label: 'Class Routine' },
     { to: '/student/materials', icon: <BookOpen size={18} />, label: 'Study Materials' },
     { to: '/student/cgpa', icon: <Calculator size={18} />, label: 'EWU CGPA' },

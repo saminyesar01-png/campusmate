@@ -15,6 +15,7 @@ import Announcements from './pages/student/Announcements';
 import CGPACalculator from './pages/student/CGPACalculator';
 import LostFound from './pages/student/LostFound';
 import StudyMaterials from './pages/student/StudyMaterials';
+import AdvisingSlip from './pages/student/AdvisingSlip';
 
 // Teacher pages
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
@@ -89,6 +90,11 @@ export default function App() {
           <Route path="/student/lost-found" element={
             <ProtectedRoute allowedRoles={['student']}>
               <AppLayout><LostFound /></AppLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/student/advising" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <AppLayout><AdvisingSlip /></AppLayout>
             </ProtectedRoute>
           } />
 
