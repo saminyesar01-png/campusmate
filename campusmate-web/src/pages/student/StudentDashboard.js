@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Calendar, Bell, BookOpen, Calculator, Search, TrendingUp } from 'lucide-react';
+import { Calendar, Bell, BookOpen, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 

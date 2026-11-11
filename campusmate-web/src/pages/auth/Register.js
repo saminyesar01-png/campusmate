@@ -3,6 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 
+const DEFAULT_DEPARTMENTS = [
+  { id: 'cse', name: 'Computer Science & Engineering', code: 'CSE' },
+  { id: 'eee', name: 'Electrical & Electronic Engineering', code: 'EEE' },
+  { id: 'bba', name: 'Business Administration', code: 'BBA' },
+  { id: 'eng', name: 'English', code: 'ENG' },
+  { id: 'law', name: 'Law', code: 'LAW' },
+];
+
 export default function Register() {
   const [form, setForm] = useState({
     fullName: '',
@@ -13,7 +21,7 @@ export default function Register() {
     studentId: '',
     departmentId: '',
   });
-  const [departments, setDepartments] = useState([]);
+  const [departments, setDepartments] = useState(DEFAULT_DEPARTMENTS);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,7 +30,13 @@ export default function Register() {
 
   useEffect(() => {
     supabase.from('departments').select('*').order('name')
-      .then(({ data }) => setDepartments(data || []));
+      .then(({ data, error }) => {
+        if (error) {
+          console.warn('Could not fetch departments from DB, using defaults:', error.message);
+        } else if (data && data.length > 0) {
+          setDepartments(data);
+        }
+      });
   }, []);
 
   function handleChange(e) {

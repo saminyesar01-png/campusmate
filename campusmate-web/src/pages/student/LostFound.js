@@ -9,7 +9,6 @@ export default function LostFound() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ type: 'lost', item_name: '', description: '', location: '' });
   const [submitting, setSubmitting] = useState(false);
-  const { user } = { user: null }; // will use from context in real app
 
   async function fetchItems() {
     let query = supabase

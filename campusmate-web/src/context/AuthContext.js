@@ -53,10 +53,11 @@ export function AuthProvider({ children }) {
     });
 
     if (!error && data.user) {
-      // Update profile with extra fields
+      // Validate UUID format before inserting department_id
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(departmentId);
       await supabase.from('profiles').update({
-        student_id: studentId,
-        department_id: departmentId
+        student_id: studentId || null,
+        department_id: isUUID ? departmentId : null
       }).eq('id', data.user.id);
     }
 

@@ -4,7 +4,6 @@ import { supabase } from '../../lib/supabase';
 import { format } from 'date-fns';
 
 export default function AdminDashboard() {
-  const { profile } = useAuth();
   const [stats, setStats] = useState({ students: 0, teachers: 0, courses: 0, announcements: 0 });
   const [recentUsers, setRecentUsers] = useState([]);
   const [loading, setLoading] = useState(true);
