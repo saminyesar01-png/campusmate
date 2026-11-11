@@ -18,6 +18,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
 
   const studentLinks = [
     { to: '/student', icon: <LayoutDashboard size={18} />, label: 'Overview' },
+    { to: '/student/classroom', icon: <Sparkles size={18} />, label: 'Google Classroom' },
     { to: '/student/advising', icon: <FileText size={18} />, label: 'Advising & Routine' },
     { to: '/student/routine', icon: <Calendar size={18} />, label: 'Class Routine' },
     { to: '/student/materials', icon: <BookOpen size={18} />, label: 'Study Materials' },

@@ -99,16 +99,17 @@ export default function StudentDashboard() {
         .order('created_at', { ascending: false })
         .limit(4);
 
-      // 4. Fetch upcoming assignments
-      const { data: assignments } = await supabase
-        .from('assignments')
-        .select('*, courses(name, code)')
-        .gte('due_date', new Date().toISOString())
-        .order('due_date')
-        .limit(4);
+      // 4. Fetch upcoming assignments (from Google Classroom sync)
+      const savedClassroom = localStorage.getItem('ewu_classroom_work');
+      let classroomTasks = [];
+      if (savedClassroom) {
+        try {
+          classroomTasks = JSON.parse(savedClassroom).filter(t => t.status !== 'submitted');
+        } catch (e) {}
+      }
 
       setAnnouncements(ann || []);
-      setUpcomingAssignments(assignments || []);
+      setUpcomingAssignments(classroomTasks.length > 0 ? classroomTasks : (assignments || []));
       setLoading(false);
     }
 
@@ -320,6 +321,9 @@ export default function StudentDashboard() {
         <div className="card">
           <div className="card-header">
             <h2 className="card-title" style={{ margin: 0 }}>📝 Upcoming Deadlines</h2>
+            <Link to="/student/classroom" className="card-link" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>View Classroom →</span>
+            </Link>
           </div>
 
           {upcomingAssignments.length === 0 ? (
@@ -329,14 +333,25 @@ export default function StudentDashboard() {
             </div>
           ) : (
             <ul className="assignment-list">
-              {upcomingAssignments.map(a => (
+              {upcomingAssignments.slice(0, 4).map(a => (
                 <li key={a.id} className="assignment-item">
-                  <div>
-                    <p className="assignment-title">{a.title}</p>
-                    <p className="assignment-meta">{a.courses?.code || 'Course Assignment'}</p>
+                  <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
+                    <p className="assignment-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {a.title}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="badge badge-primary" style={{ fontSize: '10px' }}>
+                        {a.courseCode || a.courses?.code || 'Course'}
+                      </span>
+                      {a.type && (
+                        <span className="badge badge-warning" style={{ fontSize: '10px', textTransform: 'uppercase' }}>
+                          {a.type}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <span className="deadline">
-                    Due {format(new Date(a.due_date), 'MMM d, h:mm a')}
+                  <span className="deadline" style={{ flexShrink: 0 }}>
+                    Due {format(new Date(a.dueDate || a.due_date || new Date()), 'MMM d')}
                   </span>
                 </li>
               ))}
