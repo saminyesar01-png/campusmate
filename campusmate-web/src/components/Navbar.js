@@ -53,7 +53,7 @@ export default function Navbar() {
       {/* Brand & User Row */}
       <div className="top-navbar-main">
         <Link to="/" className="top-navbar-logo">
-          <span className="logo-icon">🎓</span>
+          <img src="/favicon.svg" alt="CampusMate Logo" width="30" height="30" style={{ display: 'block', borderRadius: '8px', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)' }} />
           <div className="logo-text-col">
             <span className="logo-title">CampusMate</span>
             <span className="logo-subtitle">EWU Academic Hub</span>
