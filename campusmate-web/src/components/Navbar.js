@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, Calendar, Bell, BookOpen,
-  Calculator, Search, LogOut, GraduationCap, Sparkles, FileText
+  Calculator, Search, LogOut, GraduationCap, FileText
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -18,7 +18,6 @@ export default function Navbar() {
 
   const studentLinks = [
     { to: '/student', icon: <LayoutDashboard size={16} />, label: 'Overview' },
-    { to: '/student/classroom', icon: <Sparkles size={16} />, label: 'Google Classroom' },
     { to: '/student/advising', icon: <FileText size={16} />, label: 'Advising & Routine' },
     { to: '/student/routine', icon: <Calendar size={16} />, label: 'Class Routine' },
     { to: '/student/materials', icon: <BookOpen size={16} />, label: 'Study Materials' },

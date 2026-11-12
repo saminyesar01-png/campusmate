@@ -16,7 +16,7 @@ import CGPACalculator from './pages/student/CGPACalculator';
 import LostFound from './pages/student/LostFound';
 import StudyMaterials from './pages/student/StudyMaterials';
 import AdvisingSlip from './pages/student/AdvisingSlip';
-import GoogleClassroom from './pages/student/GoogleClassroom';
+
 
 // Teacher pages
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
@@ -84,16 +84,7 @@ export default function App() {
               <AppLayout><AdvisingSlip /></AppLayout>
             </ProtectedRoute>
           } />
-          <Route path="/student/classroom" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <AppLayout><GoogleClassroom /></AppLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/student/assignments" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <AppLayout><GoogleClassroom /></AppLayout>
-            </ProtectedRoute>
-          } />
+
 
           {/* Teacher routes */}
           <Route path="/teacher" element={
