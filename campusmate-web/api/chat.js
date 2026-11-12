@@ -8,9 +8,9 @@
 
 const { GoogleGenAI } = require('@google/genai');
 
-// In-memory per-IP rate limiter (15 requests per minute per IP)
+// In-memory per-IP rate limiter (20 requests per minute per IP)
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
-const MAX_REQUESTS_PER_WINDOW = 15;
+const MAX_REQUESTS_PER_WINDOW = 20;
 const ipRequestHistory = new Map();
 
 function isRateLimited(ip) {
@@ -26,7 +26,7 @@ function isRateLimited(ip) {
   recent.push(now);
   ipRequestHistory.set(ip, recent);
 
-  // Periodically clean up old IPs to prevent memory leak
+  // Periodically clean up old IPs
   if (ipRequestHistory.size > 1000) {
     for (const [key, timestamps] of ipRequestHistory.entries()) {
       const active = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
@@ -103,11 +103,13 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  // 2. Validate API key
-  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
+  // 2. Validate API key (clean any accidental quotes or whitespace)
+  const rawKey = process.env.GEMINI_API_KEY || '';
+  const apiKey = rawKey.replace(/["'\r\n\s]/g, '').trim();
+
   if (!apiKey) {
     return res.status(500).json({
-      error: 'GEMINI_API_KEY is not configured on the server. Please add it to your environment variables or Vercel settings.',
+      error: 'GEMINI_API_KEY is not configured on the server. Please add it to your Vercel settings and redeploy.',
     });
   }
 
@@ -175,7 +177,7 @@ GUIDELINES:
   try {
     const ai = new GoogleGenAI({ apiKey });
 
-    // Primary free tier model is gemini-2.0-flash, with automatic fallbacks
+    // Primary free tier models on Google AI Studio
     const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-flash'];
     let response = null;
     let lastError = null;
@@ -196,12 +198,12 @@ GUIDELINES:
         }
       } catch (err) {
         lastError = err;
-        console.warn(`Model ${model} failed, trying next candidate...`, err?.message || err);
+        console.warn(`Model ${model} error:`, err?.message || err);
       }
     }
 
     if (!response || !response.text) {
-      throw lastError || new Error('No response from Gemini API models.');
+      throw lastError || new Error('No response generated from Gemini API.');
     }
 
     return res.status(200).json({ reply: response.text });
@@ -214,11 +216,15 @@ GUIDELINES:
       });
     }
 
-    const detailMsg = err?.message || '';
-    return res.status(500).json({
-      error: detailMsg.includes('API key')
-        ? 'Invalid Gemini API key. Please check your key in Vercel settings.'
-        : 'Sorry, I encountered an error while processing your request. Please try again.',
-    });
+    const rawMessage = err?.message || '';
+    let userFriendlyError = 'Sorry, I encountered an error while processing your request. Please try again.';
+
+    if (rawMessage.includes('API_KEY_INVALID') || rawMessage.includes('API key not valid')) {
+      userFriendlyError = 'Your GEMINI_API_KEY is invalid. Please copy a valid key from Google AI Studio and update Vercel.';
+    } else if (rawMessage) {
+      userFriendlyError = `AI Error: ${rawMessage.slice(0, 160)}`;
+    }
+
+    return res.status(500).json({ error: userFriendlyError });
   }
 };
