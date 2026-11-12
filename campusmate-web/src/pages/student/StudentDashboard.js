@@ -311,9 +311,15 @@ export default function StudentDashboard() {
         <div className="card">
           <div className="card-header">
             <h2 className="card-title" style={{ margin: 0 }}>📝 Upcoming Deadlines</h2>
-            <Link to="/student/classroom" className="card-link" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <a
+              href="https://classroom.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="card-link"
+              style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+            >
               <span>View Classroom →</span>
-            </Link>
+            </a>
           </div>
 
           {upcomingAssignments.length === 0 ? (
