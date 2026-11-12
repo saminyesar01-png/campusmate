@@ -177,8 +177,12 @@ GUIDELINES:
   try {
     const ai = new GoogleGenAI({ apiKey });
 
-    // Primary free tier models on Google AI Studio
-    const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-flash'];
+    // Free tier current models: gemini-3.5-flash-lite (fastest, lowest latency), gemini-3.8-flash, gemini-3.1-flash-lite
+    const candidateModels = [
+      'gemini-3.5-flash-lite',
+      'gemini-3.8-flash',
+      'gemini-3.1-flash-lite'
+    ];
     let response = null;
     let lastError = null;
 
