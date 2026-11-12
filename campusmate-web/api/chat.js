@@ -2,7 +2,7 @@
  * CampusMate AI Chatbot API Handler (Vercel Serverless Function)
  * Route: /api/chat
  *
- * Uses the official @google/genai SDK with the free-tier Gemini Flash model.
+ * Uses the official @google/genai SDK with the free-tier Gemini Flash models.
  * Protects student privacy by stripping names and IDs from schedule context.
  */
 
@@ -104,7 +104,7 @@ module.exports = async function handler(req, res) {
   }
 
   // 2. Validate API key
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
   if (!apiKey) {
     return res.status(500).json({
       error: 'GEMINI_API_KEY is not configured on the server. Please add it to your environment variables or Vercel settings.',
@@ -149,32 +149,41 @@ GUIDELINES:
    - Use clean Markdown (bullet points, bold text, code blocks) to make answers easy to read on mobile and desktop.
    - Keep answers focused and concise.`;
 
+  // 7. Format messages for Gemini API
+  // Gemini requires conversations to start with a 'user' turn and alternate turns
+  const firstUserIdx = recentMessages.findIndex((m) => m.role === 'user');
+  const validMessages = firstUserIdx !== -1 ? recentMessages.slice(firstUserIdx) : recentMessages;
+
+  const contents = [];
+  for (const m of validMessages) {
+    const role = m.role === 'assistant' || m.role === 'model' ? 'model' : 'user';
+    if (contents.length > 0 && contents[contents.length - 1].role === role) {
+      contents[contents.length - 1].parts[0].text += `\n${m.content || ''}`;
+    } else {
+      contents.push({
+        role,
+        parts: [{ text: String(m.content || '') }],
+      });
+    }
+  }
+
+  // Safety fallback if no user message was found
+  if (contents.length === 0 || contents[0].role !== 'user') {
+    return res.status(400).json({ error: 'Please ask a question to begin.' });
+  }
+
   try {
     const ai = new GoogleGenAI({ apiKey });
 
-    // Format messages for @google/genai contents
-    const contents = recentMessages.map((m) => ({
-      role: m.role === 'assistant' || m.role === 'model' ? 'model' : 'user',
-      parts: [{ text: String(m.content || '') }],
-    }));
+    // Primary free tier model is gemini-2.0-flash, with automatic fallbacks
+    const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-flash'];
+    let response = null;
+    let lastError = null;
 
-    // Choose the free-tier Flash model: gemini-2.5-flash with fallback to gemini-2.0-flash
-    let response;
-    try {
-      response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents,
-        config: {
-          systemInstruction,
-          maxOutputTokens: 500,
-          temperature: 0.4,
-        },
-      });
-    } catch (modelErr) {
-      // Fallback to gemini-2.0-flash if 2.5 is unavailable
-      if (modelErr?.status === 404 || modelErr?.message?.includes('not found')) {
+    for (const model of candidateModels) {
+      try {
         response = await ai.models.generateContent({
-          model: 'gemini-2.0-flash',
+          model,
           contents,
           config: {
             systemInstruction,
@@ -182,14 +191,20 @@ GUIDELINES:
             temperature: 0.4,
           },
         });
-      } else {
-        throw modelErr;
+        if (response?.text) {
+          break; // Successfully got response
+        }
+      } catch (err) {
+        lastError = err;
+        console.warn(`Model ${model} failed, trying next candidate...`, err?.message || err);
       }
     }
 
-    const reply = response?.text || 'I could not generate an answer. Please try again.';
+    if (!response || !response.text) {
+      throw lastError || new Error('No response from Gemini API models.');
+    }
 
-    return res.status(200).json({ reply });
+    return res.status(200).json({ reply: response.text });
   } catch (err) {
     console.error('Gemini API error in /api/chat:', err);
 
@@ -199,8 +214,11 @@ GUIDELINES:
       });
     }
 
+    const detailMsg = err?.message || '';
     return res.status(500).json({
-      error: 'Sorry, I encountered an error while processing your request. Please try again.',
+      error: detailMsg.includes('API key')
+        ? 'Invalid Gemini API key. Please check your key in Vercel settings.'
+        : 'Sorry, I encountered an error while processing your request. Please try again.',
     });
   }
 };
