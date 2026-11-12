@@ -4,12 +4,14 @@ import { supabase } from '../../lib/supabase';
 import { Calendar, Bell, BookOpen, TrendingUp, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
+import ChatBox from '../../components/ChatBox';
 
 export default function StudentDashboard() {
   const { profile } = useAuth();
   const [announcements, setAnnouncements] = useState([]);
   const [todayClasses, setTodayClasses] = useState([]);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [slipData, setSlipData] = useState(null);
   const [upcomingAssignments, setUpcomingAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,6 +25,12 @@ export default function StudentDashboard() {
       const saved = userKey ? localStorage.getItem(userKey) : null;
       const courses = saved ? JSON.parse(saved) : [];
       setEnrolledCourses(courses);
+
+      const slipKey = profile?.id ? `ewu_slip_data_${profile.id}` : null;
+      const savedSlip = slipKey ? localStorage.getItem(slipKey) : null;
+      if (savedSlip) {
+        try { setSlipData(JSON.parse(savedSlip)); } catch (e) {}
+      }
 
       // 2. Extract classes scheduled for TODAY (e.g. Thursday has 3 classes!)
       const classesForToday = [];
@@ -182,6 +190,12 @@ export default function StudentDashboard() {
           <QuickAction to="/student/lost-found" icon="🔍" label="Lost & Found" desc="Report or find items" />
         </div>
       </div>
+
+      {/* CampusMate AI Academic Assistant Chatbot */}
+      <ChatBox
+        scheduleData={slipData || (enrolledCourses.length > 0 ? { courses: enrolledCourses } : null)}
+        hasSchedule={(slipData?.courses?.length > 0) || (enrolledCourses.length > 0)}
+      />
 
       <div className="dashboard-grid">
         {/* Today's Schedule Card (Linked to Advising Slip) */}
